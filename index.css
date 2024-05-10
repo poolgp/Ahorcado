@@ -1,0 +1,139 @@
+* {
+  margin: 0px;
+  padding: 0px;
+}
+
+div.tituloAhorcado {
+  height: 90px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+h1.tituloH1 {
+  margin: 0px;
+  padding: 0px;
+}
+
+div.juego {
+  display: flex;
+}
+
+div.imgAhorcado {
+  height: 100%;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div.ahorcado,
+div.fotoFinish {
+  border: solid 2px black;
+  margin: 20px;
+}
+
+div.fila1,
+div.fila2,
+div.fila3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div.final {
+  height: cover;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-content: center;
+  justify-content: center;
+}
+
+div.tematica {
+  display: flex;
+}
+
+div.nombreJugador {
+  height: 100%;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div.tematicaJuego {
+  height: 100%;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+div.contadorErrores {
+  margin: 20px;
+}
+
+div.tituloErrores {
+  display: flex;
+  justify-content: center;
+}
+
+div.contador {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
+span {
+  font-size: 20px;
+}
+
+div.palabraAhorcado {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
+div.palabra {
+  font-size: 30px;
+  margin: 20px;
+}
+
+div.letras {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px;
+}
+
+div.containerLletras {
+  height: auto;
+  width: 100%;
+}
+
+div.formulario {
+  height: auto;
+  width: 100%;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+}
+
+div.form {
+  height: 100%;
+  width: 50%;
+  margin: 20px;
+}
+
+div.botones {
+  display: flex;
+  align-content: center;
+  justify-content: center;
+  margin: 20px;
+}
