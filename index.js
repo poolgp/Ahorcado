@@ -1,167 +1,174 @@
-// Paraulas i categories
-const words = [
-  { word: "muntanya", category: "geografia" },
-  { word: "oceà", category: "geografia" },
-  { word: "pols", category: "transport" },
-  // Més paraules i categories aquí...
-];
+document.addEventListener('DOMContentLoaded', () => {
+  const words = [
+      { word: 'aviò', category: 'Transports' },
+      { word: 'oceà', category: 'Geografia' },
+      { word: 'turista', category: 'Professions' },
+      // Afegir més paraules i categories
+  ];
 
-// Funció per obtenir una paraula aleatòria del conjunt
-function getRandomWord() {
-  return words[Math.floor(Math.random() * words.length)];
-}
+  const maxErrors = 6;
+  let selectedWord = '';
+  let selectedCategory = '';
+  let maskedWordArray = [];
+  let usedLetters = [];
+  let errors = 0;
+  let username = '';
 
-// Inicia un nou joc
-function startGame() {
-  const username = document.getElementById("username").value;
-  if (username === "") {
-    alert("Si us plau, introdueix el teu nom d'usuari.");
-    return;
-  }
+  const usernameInput = document.getElementById('username');
+  const startGameBtn = document.getElementById('startGameBtn');
+  const gameArea = document.getElementById('gameArea');
+  const categoryElement = document.getElementById('category');
+  const maskedWordElement = document.getElementById('maskedWord');
+  const alphabetElement = document.getElementById('alphabet');
+  const hangmanImagesElement = document.getElementById('hangmanImages');
+  const gameEndMessageElement = document.getElementById('gameEndMessage');
+  const playAgainBtn = document.getElementById('playAgainBtn');
 
-  const hangmanImages = document.getElementById("hangman-images");
-  hangmanImages.innerHTML = ""; // Reinicia les imatges del penjat
+  startGameBtn.addEventListener('click', startGame);
+  playAgainBtn.addEventListener('click', startGame);
 
-  const wordObj = getRandomWord();
-  const word = wordObj.word;
-  const category = wordObj.category;
-
-  document.getElementById("category").innerHTML = `Categoria: ${category}`;
-
-  const wordMask = document.getElementById("word-mask");
-  wordMask.innerHTML = ""; // Reinicia la màscara de la paraula
-
-  for (let i = 0; i < word.length; i++) {
-    wordMask.innerHTML += `<span class="letter-mask">_</span>`;
-  }
-
-  const letters = document.getElementById("letters");
-  letters.innerHTML = ""; // Reinicia les lletres disponibles
-
-  for (let i = 0; i < 26; i++) {
-    const letter = String.fromCharCode(65 + i);
-    letters.innerHTML += `<button class="btn btn-secondary letter-btn" onclick="selectLetter('${letter}')">${letter}</button>`;
-  }
-
-  // Inicialitza les dades locals
-  localStorage.setItem("username", username);
-  localStorage.setItem("word", word);
-  localStorage.setItem("category", category);
-  localStorage.setItem("hangmanState", 0); // Inicia el penjat amb 0 errors
-}
-
-// Funció per seleccionar una lletra
-function selectLetter(letter) {
-  const word = localStorage.getItem("word");
-  const wordMask = document.getElementById("word-mask");
-  const hangmanImages = document.getElementById("hangman-images");
-  const letters = document.getElementsByClassName("letter-btn");
-
-  if (word.includes(letter)) {
-    for (let i = 0; i < word.length; i++) {
-      if (word[i] === letter) {
-        const letterMask = wordMask.getElementsByClassName("letter-mask")[i];
-        letterMask.innerHTML = letter;
-      }
-    }
-  } else {
-    const hangmanState = parseInt(localStorage.getItem("hangmanState"));
-    hangmanImages.innerHTML += `<img src="img/Penjat${
-      hangmanState + 1
-    }.png" alt="Penjat ${hangmanState + 1}">`;
-
-    if (hangmanState >= 5) {
-      endGame(false);
+  function startGame() {
+    username = usernameInput.value.trim();
+    if (!username) {
+      alert('Si us plau, introdueix un nom d\'usuari.');
       return;
     }
-
-    localStorage.setItem("hangmanState", hangmanState + 1);
+    resetGame();
+    selectRandomWord();
+    displayMaskedWord();
+    displayAlphabet();
+    displayCategory();
+    gameArea.style.display = 'block';
+    saveGameState();
   }
 
-  // Desactiva la lletra seleccionada
-  for (let i = 0; i < letters.length; i++) {
-    if (letters[i].innerHTML === letter) {
-      letters[i].disabled = true;
-      break;
+  function resetGame() {
+    selectedWord = '';
+    selectedCategory = '';
+    maskedWordArray = [];
+    usedLetters = [];
+    errors = 0;
+    maskedWordElement.innerHTML = '';
+    alphabetElement.innerHTML = '';
+    hangmanImagesElement.innerHTML = '';
+    gameEndMessageElement.style.display = 'none';
+    playAgainBtn.style.display = 'none';
+  }
+
+  function selectRandomWord() {
+    const randomIndex = Math.floor(Math.random() * words.length);
+    selectedWord = words[randomIndex].word;
+    selectedCategory = words[randomIndex].category;
+    maskedWordArray = Array(selectedWord.length).fill('_');
+  }
+
+  function displayMaskedWord() {
+    maskedWordElement.textContent = maskedWordArray.join(' ');
+  }
+
+  function displayAlphabet() {
+    alphabetElement.innerHTML = '';  // Clear previous buttons
+    const alphabet = 'abcdefghijklmnopqrstuvwxyz'.split('');
+    alphabet.forEach(letter => {
+      const button = document.createElement('button');
+      button.textContent = letter;
+      button.classList.add('btn', 'btn-secondary');
+      button.addEventListener('click', () => handleLetterClick(letter));
+      alphabetElement.appendChild(button);
+    });
+  }
+
+  function handleLetterClick(letter) {
+    if (usedLetters.includes(letter)) return;
+    usedLetters.push(letter);
+    if (selectedWord.includes(letter)) {
+      revealLetter(letter);
+    } else {
+      errors++;
+      updateHangmanImages();
     }
+    checkGameEnd();
   }
 
-  // Comprova si s'ha guanyat el joc
-  if (!wordMask.innerHTML.includes("_")) {
-    endGame(true);
-  }
-}
-
-// Funció per finalitzar el joc
-function endGame(win) {
-  const result = document.getElementById("result");
-  const playAgainBtn = document.getElementById("play-again-btn");
-  const word = localStorage.getItem("word");
-  const category = localStorage.getItem("category");
-
-  if (win) {
-    result.innerHTML = `<h3>Enhorabona, has guanyat!</h3>`;
-  } else {
-    result.innerHTML = `<h3>Ho sentim, has perdut.</h3>`;
-  }
-
-  result.innerHTML += `<p>La paraula era: ${word}</p>`;
-  result.innerHTML += `<p>Informació educativa sobre ${word} (${category})</p>`;
-
-  playAgainBtn.style.display = "block";
-}
-
-// Event Listener per al botó de començar joc
-document.getElementById("start-btn").addEventListener("click", startGame);
-
-// Event Listener per al botó de tornar a jugar
-document
-  .getElementById("play-again-btn")
-  .addEventListener("click", function () {
-    localStorage.clear(); // Esborra les dades locals
-    location.reload(); // Recarrega la pàgina per començar un nou joc
-  });
-
-// Restaura l'estat del joc si és obert
-window.onload = function () {
-  const savedUsername = localStorage.getItem("username");
-  if (savedUsername) {
-    document.getElementById("username").value = savedUsername;
-  }
-
-  const savedWord = localStorage.getItem("word");
-  const savedCategory = localStorage.getItem("category");
-  const hangmanState = localStorage.getItem("hangmanState");
-
-  if (savedWord && savedCategory && hangmanState) {
-    document.getElementById(
-      "category"
-    ).innerHTML = `Categoria: ${savedCategory}`;
-
-    const wordMask = document.getElementById("word-mask");
-    const hangmanImages = document.getElementById("hangman-images");
-    const letters = document.getElementsByClassName("letter-btn");
-
-    for (let i = 0; i < savedWord.length; i++) {
-      const letter = savedWord[i];
-      if (wordMask.getElementsByClassName("letter-mask")[i].innerHTML === "_") {
-        wordMask.innerHTML += `<span class="letter-mask">_</span>`;
-      } else {
-        wordMask.innerHTML += `<span class="letter-mask">${letter}</span>`;
+  function revealLetter(letter) {
+    for (let i = 0; i < selectedWord.length; i++) {
+      if (selectedWord[i] === letter) {
+        maskedWordArray[i] = letter;
       }
     }
+    displayMaskedWord();
+  }
 
-    for (let i = 0; i < hangmanState; i++) {
-      hangmanImages.innerHTML += `<img src="img/Penjat${
-        i + 1
-      }.png" alt="Penjat ${i + 1}">`;
-    }
-
-    for (let i = 0; i < letters.length; i++) {
-      const letter = letters[i].innerHTML;
-      if (savedWord.includes(letter)) {
-        letters[i].disabled = true;
-      }
+  function updateHangmanImages() {
+    hangmanImagesElement.innerHTML = '';
+    for (let i = 1; i <= errors; i++) {
+      const img = document.createElement('img');
+      img.src = `img/Penjat${i}.png`;
+      hangmanImagesElement.appendChild(img);
     }
   }
-};
+
+  function checkGameEnd() {
+    if (!maskedWordArray.includes('_')) {
+      endGame(true);
+    } else if (errors >= maxErrors) {
+      endGame(false);
+    }
+    saveGameState();
+  }
+
+  function endGame(won) {
+    gameEndMessageElement.style.display = 'block';
+    playAgainBtn.style.display = 'block';
+    if (won) {
+      gameEndMessageElement.textContent = `Felicitats ${username}! Has encertat la paraula: ${selectedWord}`;
+    } else {
+      gameEndMessageElement.textContent = `Has perdut ${username}. La paraula era: ${selectedWord}`;
+    }
+    displayEducationalInfo();
+  }
+
+  function displayEducationalInfo() {
+    // Aquí es pot afegir informació educativa relacionada amb la paraula encertada o no.
+    // Per exemple:
+    if (selectedWord === 'aviò') {
+      gameEndMessageElement.innerHTML += '<p>Sabies que els avions són un dels mitjans de transport més segurs?</p>';
+    }
+  }
+
+  function displayCategory() {
+    categoryElement.textContent = `Categoria: ${selectedCategory}`;
+  }
+
+  function saveGameState() {
+    const gameState = {
+      username,
+      selectedWord,
+      selectedCategory,
+      maskedWordArray,
+      usedLetters,
+      errors
+    };
+    localStorage.setItem('hangmanGameState', JSON.stringify(gameState));
+  }
+
+  function loadGameState() {
+    const savedGameState = localStorage.getItem('hangmanGameState');
+    if (savedGameState) {
+      const gameState = JSON.parse(savedGameState);
+      username = gameState.username;
+      selectedWord = gameState.selectedWord;
+      selectedCategory = gameState.selectedCategory;
+      maskedWordArray = gameState.maskedWordArray;
+      usedLetters = gameState.usedLetters;
+      errors = gameState.errors;
+      displayMaskedWord();
+      displayAlphabet();
+      updateHangmanImages();
+      displayCategory();
+      checkGameEnd();
+    }
+  }
+
+  loadGameState();
+});
